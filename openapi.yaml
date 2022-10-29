@@ -1,0 +1,90 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: twitch
+servers:
+  - url: "https://api.twitch.tv/helix"
+paths:
+  /users:
+    parameters:
+      - name: id
+        in: query
+        description: User id
+        schema:
+          type: string
+      - name: login
+        in: query
+        description: User login name.
+        schema:
+          type: string
+    get:
+      parameters:
+        - name: Client-Id
+          in: header
+          schema:
+            type: string
+      tags:
+        - User
+      summary: Get user
+      description: retrieve user info
+      operationId: getUser
+      security:
+        - oAuth2ClientCredentials: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://id.twitch.tv/oauth2/token
+          scopes: {}
+  schemas:
+    User:
+      type: object
+      properties:
+        broadcaster_type:
+          description: User’s broadcaster type partner, affiliate, or empty
+          type: string
+          enum: ["partner", "affiliate", ""]
+        description:
+          description: User's channel description
+          type: string
+        display_name:
+          description: User's display name
+          type: string
+        id:
+          description: User's ID
+          type: string
+        lgin:
+          description: User's login name
+          type: string
+        offline_image_url:
+          description: URL of the user's offline image
+          type: string
+        profile_image_url:
+          description: URL of the user's profile image
+          type: string
+        type:
+          description: User's type staff, admin, global_mod or empty
+          type: string
+          enum: [staff, admin, global_mod, ""]
+        view_count:
+          type: integer
+          deprecated: true
+        email:
+          type: string
+        created_at:
+          type: string
+security:
+  - oAuth2ClientCredentials: []
