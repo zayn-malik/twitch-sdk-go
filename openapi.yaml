@@ -30,13 +30,63 @@ paths:
       operationId: getUser
       security:
         - oAuth2ClientCredentials: []
+        - bearerAuth: []
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+  /videos:
+    parameters:
+      - name: id
+        in: query
+        description: ID of video.
+        schema:
+          type: string
+      - name: user_id
+        in: query
+        description: ID of user who owns the video.
+        schema:
+          type: string
+      - name: game_od
+        in: query
+        description: ID of the game the video is of.
+        schema:
+          type: string
+    get:
+      parameters:
+        - name: Client-Id
+          in: header
+          schema:
+            type: string
+      summary: Get video
+      operationId: getVideo
+      security:
+        - oAuth2ClientCredentials: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Video"
         "403":
           description: Forbidden
         "404":
@@ -49,6 +99,9 @@ components:
         clientCredentials:
           tokenUrl: https://id.twitch.tv/oauth2/token
           scopes: {}
+    bearerAuth:
+      type: http
+      scheme: bearer
   schemas:
     User:
       type: object
@@ -66,7 +119,7 @@ components:
         id:
           description: User's ID
           type: string
-        lgin:
+        login:
           description: User's login name
           type: string
         offline_image_url:
@@ -86,5 +139,61 @@ components:
           type: string
         created_at:
           type: string
+    Video:
+      type: object
+      properties:
+        id:
+          description: ID of the video.
+          type: string
+        stream_id:
+          description: ID of the stream.
+          type: string
+        user_id:
+          description: ID of the user who owns video.
+          type: string
+        user_login:
+          description: Login of the user who owns the video.
+          type: string
+        user_name:
+          description: Display name corresponding to user_id.
+          type: string
+        title:
+          description: Title of the video.
+          type: string
+        description:
+          description: Description of the video.
+          type: string
+        created_at:
+          description: Date when the video was created.
+          type: string
+        published_at:
+          description: Date when the video was published.
+          type: string
+        url:
+          type: string
+        thumbnail_url:
+          type: string
+        viewable:
+          type: string
+        view_count:
+          type: integer
+        language:
+          type: string
+        type:
+          type: string
+        duration:
+          type: string
+        # muted_segments:
+        #   type: object
+        segments.duration:
+          type: integer
+        segments.offset:
+          type: integer
+        pagination:
+          type: object
+          properties:
+            cursor:
+              type: string
 security:
   - oAuth2ClientCredentials: []
+  - bearerAuth: []

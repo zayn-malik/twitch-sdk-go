@@ -21,6 +21,7 @@ import (
 )
 
 const (
+	BearerAuthScopes              = "bearerAuth.Scopes"
 	OAuth2ClientCredentialsScopes = "oAuth2ClientCredentials.Scopes"
 )
 
@@ -55,8 +56,8 @@ type User struct {
 	// Id User's ID
 	Id *string `json:"id,omitempty"`
 
-	// Lgin User's login name
-	Lgin *string `json:"lgin,omitempty"`
+	// Login User's login name
+	Login *string `json:"login,omitempty"`
 
 	// OfflineImageUrl URL of the user's offline image
 	OfflineImageUrl *string `json:"offline_image_url,omitempty"`
@@ -75,6 +76,48 @@ type UserBroadcasterType string
 // UserType User's type staff, admin, global_mod or empty
 type UserType string
 
+// Video defines model for Video.
+type Video struct {
+	// CreatedAt Date when the video was created.
+	CreatedAt *string `json:"created_at,omitempty"`
+
+	// Description Description of the video.
+	Description *string `json:"description,omitempty"`
+	Duration    *string `json:"duration,omitempty"`
+
+	// Id ID of the video.
+	Id         *string `json:"id,omitempty"`
+	Language   *string `json:"language,omitempty"`
+	Pagination *struct {
+		Cursor *string `json:"cursor,omitempty"`
+	} `json:"pagination,omitempty"`
+
+	// PublishedAt Date when the video was published.
+	PublishedAt      *string `json:"published_at,omitempty"`
+	SegmentsDuration *int    `json:"segments.duration,omitempty"`
+	SegmentsOffset   *int    `json:"segments.offset,omitempty"`
+
+	// StreamId ID of the stream.
+	StreamId     *string `json:"stream_id,omitempty"`
+	ThumbnailUrl *string `json:"thumbnail_url,omitempty"`
+
+	// Title Title of the video.
+	Title *string `json:"title,omitempty"`
+	Type  *string `json:"type,omitempty"`
+	Url   *string `json:"url,omitempty"`
+
+	// UserId ID of the user who owns video.
+	UserId *string `json:"user_id,omitempty"`
+
+	// UserLogin Login of the user who owns the video.
+	UserLogin *string `json:"user_login,omitempty"`
+
+	// UserName Display name corresponding to user_id.
+	UserName  *string `json:"user_name,omitempty"`
+	ViewCount *int    `json:"view_count,omitempty"`
+	Viewable  *string `json:"viewable,omitempty"`
+}
+
 // GetUserParams defines parameters for GetUser.
 type GetUserParams struct {
 	// Id User id
@@ -82,6 +125,19 @@ type GetUserParams struct {
 
 	// Login User login name.
 	Login    *string `form:"login,omitempty" json:"login,omitempty"`
+	ClientId *string `json:"Client-Id,omitempty"`
+}
+
+// GetVideoParams defines parameters for GetVideo.
+type GetVideoParams struct {
+	// Id ID of video.
+	Id *string `form:"id,omitempty" json:"id,omitempty"`
+
+	// UserId ID of user who owns the video.
+	UserId *string `form:"user_id,omitempty" json:"user_id,omitempty"`
+
+	// GameOd ID of the game the video is of.
+	GameOd   *string `form:"game_od,omitempty" json:"game_od,omitempty"`
 	ClientId *string `json:"Client-Id,omitempty"`
 }
 
@@ -160,10 +216,25 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 type ClientInterface interface {
 	// GetUser request
 	GetUser(ctx context.Context, params *GetUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVideo request
+	GetVideo(ctx context.Context, params *GetVideoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetUser(ctx context.Context, params *GetUserParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUserRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVideo(ctx context.Context, params *GetVideoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVideoRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -248,6 +319,96 @@ func NewGetUserRequest(server string, params *GetUserParams) (*http.Request, err
 	return req, nil
 }
 
+// NewGetVideoRequest generates requests for GetVideo
+func NewGetVideoRequest(server string, params *GetVideoParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/videos")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Id != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.UserId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "user_id", runtime.ParamLocationQuery, *params.UserId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.GameOd != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "game_od", runtime.ParamLocationQuery, *params.GameOd); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params.ClientId != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Client-Id", runtime.ParamLocationHeader, *params.ClientId)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Client-Id", headerParam0)
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -293,12 +454,17 @@ func WithBaseURL(baseURL string) ClientOption {
 type ClientWithResponsesInterface interface {
 	// GetUser request
 	GetUserWithResponse(ctx context.Context, params *GetUserParams, reqEditors ...RequestEditorFn) (*GetUserResponse, error)
+
+	// GetVideo request
+	GetVideoWithResponse(ctx context.Context, params *GetVideoParams, reqEditors ...RequestEditorFn) (*GetVideoResponse, error)
 }
 
 type GetUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *struct {
+		Data *[]User `json:"data,omitempty"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -317,6 +483,30 @@ func (r GetUserResponse) StatusCode() int {
 	return 0
 }
 
+type GetVideoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *[]Video `json:"data,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVideoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVideoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetUserWithResponse request returning *GetUserResponse
 func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, params *GetUserParams, reqEditors ...RequestEditorFn) (*GetUserResponse, error) {
 	rsp, err := c.GetUser(ctx, params, reqEditors...)
@@ -324,6 +514,15 @@ func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, params *G
 		return nil, err
 	}
 	return ParseGetUserResponse(rsp)
+}
+
+// GetVideoWithResponse request returning *GetVideoResponse
+func (c *ClientWithResponses) GetVideoWithResponse(ctx context.Context, params *GetVideoParams, reqEditors ...RequestEditorFn) (*GetVideoResponse, error) {
+	rsp, err := c.GetVideo(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVideoResponse(rsp)
 }
 
 // ParseGetUserResponse parses an HTTP response from a GetUserWithResponse call
@@ -341,7 +540,37 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest struct {
+			Data *[]User `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVideoResponse parses an HTTP response from a GetVideoWithResponse call
+func ParseGetVideoResponse(rsp *http.Response) (*GetVideoResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVideoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]Video `json:"data,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -355,18 +584,23 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/5RUTW/bOBD9K8TsArloLefjpNsiiy0C9NQgp8AwaHIkTUqRLDlyagQG+jf69/pLCpJu",
-	"HMNSgJwkkI+Pj2/ezAsoN3hn0XKE5gWi6nGQ+fchYkhfH5zHwIR5dROc1EpGxrDmnce0pjGqQJ7JWWjy",
-	"uV8/fkbxBioSVHgZ2GKohGxbMiQZK+GCwMHzDipAOw7QPMIBBhW84qACWFVQLoTIgWwH+wpUQMmo15KT",
-	"jrPtE2FTOi+iUL20Fo14uzlxk6bojdytrRxwlusAEhk0QYKDJDOplPQs6d1/U1Smo/k3GdeRnVXh2taQ",
-	"xTUNssP1GMwEz5fPwrWCexRjoTwcEvnQFKsPriXzQdbDoXnW+YhdxBKqyLJtKyH1QLYSnXEbadaD01PJ",
-	"ytiUqwSGCo7ouYBtCZ/Xyo2WiwofUKXEQcNhxNcDZBk7DLB/lQxu84SK80pENQbi3X1qrtJG7t+R+6tb",
-	"Q2j5NqBGyyRN3mqNe84/amo3KuczRbrJfUX7kJyGntnHpq5JL/iZWPUL3tZOpkvqDDuRltdhn5bIti4n",
-	"ktikvXIaKthiiMXty8VysczB8WilJ2jgenG5WEIFXnKfZdWpoPmvQz4vWEAOhNtSd5HvzHRBJsCdhgY+",
-	"IeeJk0iDHJAz3+MLpJxDj1LnzdJ/UJz75y4VrsysibbaryoIGL2zsbh+tVxmY51lLBWV3htSWUX9FMuY",
-	"OPL9HbCFBv6qj0OyPkzIOovNFp4+9X5UCmNMft0sr8+t+N+FDWmdKpIQN9PpFtaxaN1o9UmCsiGz2Xlc",
-	"pRfHcRhk2BVLs+GpsWSXAGWor/ZnJk8ooORtNv/biGF39J7eN72aZDuOpMUMbUa8X84PW4Fh++eF40mf",
-	"SE9vGqVHQ99hv9r/DgAA//9dYfvYDwcAAA==",
+	"H4sIAAAAAAAC/9xWy67bNhD9FWJaIBvVch4r74oYLS6QVdN0c2EYtDSSmFIkS47sGhcG+hv9vX5JMaT8",
+	"iinfJMgqK8vkmTPDmcMZPkFle2cNGgqweIJQddjL+PkhoOdf561DTwrj6sZbWVcyEPo17R3yWo2h8sqR",
+	"sgYW0e6/f/4N4gIqGCqc9GTQF0I2jdJKEhbCeoG9oz0UgGboYfEIIwwKOOGgAFgVkBxCIK9MC4cCKo+S",
+	"sF5L4jhutq8Cy8X5Ioiqk8agFpebGU+1Ck7L/drIHie5RpCIoAwJ9lLpbKSqniR9WOaotG3V9KHi7mQY",
+	"tmm0MrhWvWxxPXid4fntnbCNoA7FkChHIxGNcqzO20bpL2QdjaZZpzX2IiRVBZJNUwhZ98oUotV2I/W6",
+	"t3VOWhHLwmIwFHBGTylsq3C3ruxgKEXhPFYsOViQH/BkoAxhix4Op5DBbj5iRczxh6rR3l6la/FeH3Ap",
+	"CcWuQxOTtWUCsZNBjDazrETvqX15/ncsQWTNMw1eHmk+S6oPy+dJtTTtwFXOkTrZKnPy+UmeBh+sz5jl",
+	"cu2GjVah+8K0nqyykQdse26Qs0xeToW/gNmmCUgTIPIo+/X9JCZQNhbqhn5jpNLHG3aLUKQzV+Z3Xn6+",
+	"Ssf7drMx5Y4v8jPHYYjYdVbYnQl3fEeqicb2Lna0LOH9A0XSfNdeXrRrUVnvMThramVaQVaMB8uSXneF",
+	"2yrzvtxo/CzRRulUg1e0f8/jdxy0KD36nwfqTnOZjdLyOaaOyMWezshXb7VCQ2891mhISR2ZGm136SLl",
+	"dkNlXfTIgdk/0XzgQkfesChLVc9op6jqZrQtrWQnZYRdnSSuw4GXlGlirxtlCMkaCtiiDynvL2fz2TwG",
+	"7dBIp2ABr2cvZ3PgPkBdDKvk9MevFjMX2SN5hdtRCtFnpEv386GGBfyKFJ8wTOpljxT5Hp+A5QUdyjpu",
+	"JmlAytxPDzwI0iMoV7tVAUkkIRXp1XweE2sNYdKCdE6rKkZRfgypVZz5rhtbLSmuKsI+LvzosYEF/FCe",
+	"H2Xl+CIr41nOKZfey31WTZ9OAng/VBWGwMZv5q9vc/mL9RtV11xSRrzJj1thLInGDqa+UmzM6KT4HleH",
+	"4lrKjytOYhj6Xvp9qlKsIStatmySHp6rw03dMjEpLles518D+v25nOp+HYss2/nVNJugTc3prkIOBZSx",
+	"G12K90aZ6UnwnUgzHeb71Ob2eLa7Ykyz7jSEvoUiE+WdSZdzchzGX+GJuVsehOeXkeJX/5Qrxq7tM5r8",
+	"BtVAvz3mfLiaTNKpi9HUoVZ/w2F1+D8AAP//S081uNIOAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
