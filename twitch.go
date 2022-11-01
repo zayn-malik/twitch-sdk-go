@@ -35,6 +35,11 @@ const (
 	UserTypeStaff     UserType = "staff"
 )
 
+// Pagination defines model for Pagination.
+type Pagination struct {
+	Cursor *string `json:"cursor,omitempty"`
+}
+
 // User defines model for User.
 type User struct {
 	// BroadcasterType User’s broadcaster type partner, affiliate, or empty
@@ -81,11 +86,9 @@ type Video struct {
 	Duration    *string `json:"duration,omitempty"`
 
 	// Id ID of the video.
-	Id         *string `json:"id,omitempty"`
-	Language   *string `json:"language,omitempty"`
-	Pagination *struct {
-		Cursor *string `json:"cursor,omitempty"`
-	} `json:"pagination,omitempty"`
+	Id         *string     `json:"id,omitempty"`
+	Language   *string     `json:"language,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
 
 	// PublishedAt Date when the video was published.
 	PublishedAt      *string `json:"published_at,omitempty"`

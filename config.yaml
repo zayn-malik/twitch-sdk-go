@@ -4,6 +4,3 @@ generate:
   client: true
   models: true
   embedded-spec: false
-
-compatibility:
-  disable-required-readonly-as-pointer: true
