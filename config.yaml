@@ -1,6 +1,9 @@
 package: twitch
+
 generate:
-  echo-server: false
   client: true
   models: true
-  embedded-spec: true
+  embedded-spec: false
+
+compatibility:
+  disable-required-readonly-as-pointer: true

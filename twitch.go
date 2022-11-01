@@ -4,20 +4,15 @@
 package twitch
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
-	"github.com/getkin/kin-openapi/openapi3"
 )
 
 const (
@@ -579,98 +574,4 @@ func ParseGetVideoResponse(rsp *http.Response) (*GetVideoResponse, error) {
 	}
 
 	return response, nil
-}
-
-// Base64 encoded, gzipped, json marshaled Swagger object
-var swaggerSpec = []string{
-
-	"H4sIAAAAAAAC/9xWy67bNhD9FWJaIBvVch4r74oYLS6QVdN0c2EYtDSSmFIkS47sGhcG+hv9vX5JMaT8",
-	"iinfJMgqK8vkmTPDmcMZPkFle2cNGgqweIJQddjL+PkhoOdf561DTwrj6sZbWVcyEPo17R3yWo2h8sqR",
-	"sgYW0e6/f/4N4gIqGCqc9GTQF0I2jdJKEhbCeoG9oz0UgGboYfEIIwwKOOGgAFgVkBxCIK9MC4cCKo+S",
-	"sF5L4jhutq8Cy8X5Ioiqk8agFpebGU+1Ck7L/drIHie5RpCIoAwJ9lLpbKSqniR9WOaotG3V9KHi7mQY",
-	"tmm0MrhWvWxxPXid4fntnbCNoA7FkChHIxGNcqzO20bpL2QdjaZZpzX2IiRVBZJNUwhZ98oUotV2I/W6",
-	"t3VOWhHLwmIwFHBGTylsq3C3ruxgKEXhPFYsOViQH/BkoAxhix4Op5DBbj5iRczxh6rR3l6la/FeH3Ap",
-	"CcWuQxOTtWUCsZNBjDazrETvqX15/ncsQWTNMw1eHmk+S6oPy+dJtTTtwFXOkTrZKnPy+UmeBh+sz5jl",
-	"cu2GjVah+8K0nqyykQdse26Qs0xeToW/gNmmCUgTIPIo+/X9JCZQNhbqhn5jpNLHG3aLUKQzV+Z3Xn6+",
-	"Ssf7drMx5Y4v8jPHYYjYdVbYnQl3fEeqicb2Lna0LOH9A0XSfNdeXrRrUVnvMThramVaQVaMB8uSXneF",
-	"2yrzvtxo/CzRRulUg1e0f8/jdxy0KD36nwfqTnOZjdLyOaaOyMWezshXb7VCQ2891mhISR2ZGm136SLl",
-	"dkNlXfTIgdk/0XzgQkfesChLVc9op6jqZrQtrWQnZYRdnSSuw4GXlGlirxtlCMkaCtiiDynvL2fz2TwG",
-	"7dBIp2ABr2cvZ3PgPkBdDKvk9MevFjMX2SN5hdtRCtFnpEv386GGBfyKFJ8wTOpljxT5Hp+A5QUdyjpu",
-	"JmlAytxPDzwI0iMoV7tVAUkkIRXp1XweE2sNYdKCdE6rKkZRfgypVZz5rhtbLSmuKsI+LvzosYEF/FCe",
-	"H2Xl+CIr41nOKZfey31WTZ9OAng/VBWGwMZv5q9vc/mL9RtV11xSRrzJj1thLInGDqa+UmzM6KT4HleH",
-	"4lrKjytOYhj6Xvp9qlKsIStatmySHp6rw03dMjEpLles518D+v25nOp+HYss2/nVNJugTc3prkIOBZSx",
-	"G12K90aZ6UnwnUgzHeb71Ob2eLa7Ykyz7jSEvoUiE+WdSZdzchzGX+GJuVsehOeXkeJX/5Qrxq7tM5r8",
-	"BtVAvz3mfLiaTNKpi9HUoVZ/w2F1+D8AAP//S081uNIOAAA=",
-}
-
-// GetSwagger returns the content of the embedded swagger specification file
-// or error if failed to decode
-func decodeSpec() ([]byte, error) {
-	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
-	if err != nil {
-		return nil, fmt.Errorf("error base64 decoding spec: %s", err)
-	}
-	zr, err := gzip.NewReader(bytes.NewReader(zipped))
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %s", err)
-	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(zr)
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %s", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-var rawSpec = decodeSpecCached()
-
-// a naive cached of a decoded swagger spec
-func decodeSpecCached() func() ([]byte, error) {
-	data, err := decodeSpec()
-	return func() ([]byte, error) {
-		return data, err
-	}
-}
-
-// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
-func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
-	var res = make(map[string]func() ([]byte, error))
-	if len(pathToFile) > 0 {
-		res[pathToFile] = rawSpec
-	}
-
-	return res
-}
-
-// GetSwagger returns the Swagger specification corresponding to the generated code
-// in this file. The external references of Swagger specification are resolved.
-// The logic of resolving external references is tightly connected to "import-mapping" feature.
-// Externally referenced files must be embedded in the corresponding golang packages.
-// Urls can be supported but this task was out of the scope.
-func GetSwagger() (swagger *openapi3.T, err error) {
-	var resolvePath = PathToRawSpec("")
-
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		var pathToFile = url.String()
-		pathToFile = path.Clean(pathToFile)
-		getSpec, ok := resolvePath[pathToFile]
-		if !ok {
-			err1 := fmt.Errorf("path not found: %s", pathToFile)
-			return nil, err1
-		}
-		return getSpec()
-	}
-	var specData []byte
-	specData, err = rawSpec()
-	if err != nil {
-		return
-	}
-	swagger, err = loader.LoadFromData(specData)
-	if err != nil {
-		return
-	}
-	return
 }
