@@ -183,17 +183,18 @@ components:
           type: string
         duration:
           type: string
-        # muted_segments:
-        #   type: object
         segments.duration:
           type: integer
         segments.offset:
           type: integer
         pagination:
-          type: object
-          properties:
-            cursor:
-              type: string
+          $ref: "#/components/schemas/Pagination"
+    Pagination:
+      type: object
+      properties:
+        cursor:
+          type: string
+
 security:
   - oAuth2ClientCredentials: []
   - bearerAuth: []
