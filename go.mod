@@ -1,4 +1,4 @@
-module twitch_sdk_go
+module github.com/zayn-malik/twitch_sdk_go
 
 go 1.19
 
