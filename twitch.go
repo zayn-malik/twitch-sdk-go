@@ -76,6 +76,11 @@ type UserBroadcasterType string
 // UserType User's type staff, admin, global_mod or empty
 type UserType string
 
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	Data *[]User `json:"data,omitempty"`
+}
+
 // Video defines model for Video.
 type Video struct {
 	// CreatedAt Date when the video was created.
@@ -91,9 +96,7 @@ type Video struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 
 	// PublishedAt Date when the video was published.
-	PublishedAt      *string `json:"published_at,omitempty"`
-	SegmentsDuration *int    `json:"segments.duration,omitempty"`
-	SegmentsOffset   *int    `json:"segments.offset,omitempty"`
+	PublishedAt *string `json:"published_at,omitempty"`
 
 	// StreamId ID of the stream.
 	StreamId     *string `json:"stream_id,omitempty"`
@@ -114,6 +117,11 @@ type Video struct {
 	UserName  *string `json:"user_name,omitempty"`
 	ViewCount *int    `json:"view_count,omitempty"`
 	Viewable  *string `json:"viewable,omitempty"`
+}
+
+// VideoResponse defines model for VideoResponse.
+type VideoResponse struct {
+	Data *[]Video `json:"data,omitempty"`
 }
 
 // GetUserParams defines parameters for GetUser.
@@ -460,9 +468,7 @@ type ClientWithResponsesInterface interface {
 type GetUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]User `json:"data,omitempty"`
-	}
+	JSON200      *UserResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -484,9 +490,7 @@ func (r GetUserResponse) StatusCode() int {
 type GetVideoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]Video `json:"data,omitempty"`
-	}
+	JSON200      *VideoResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -538,9 +542,7 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]User `json:"data,omitempty"`
-		}
+		var dest UserResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -566,9 +568,7 @@ func ParseGetVideoResponse(rsp *http.Response) (*GetVideoResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]Video `json:"data,omitempty"`
-		}
+		var dest VideoResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

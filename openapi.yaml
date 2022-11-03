@@ -37,12 +37,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserResponse"
         "403":
           description: Forbidden
         "404":
@@ -81,12 +76,8 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Video"
+                $ref: "#/components/schemas/VideoResponse"
+
         "403":
           description: Forbidden
         "404":
@@ -139,6 +130,13 @@ components:
           type: string
         created_at:
           type: string
+    UserResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
     Video:
       type: object
       properties:
@@ -183,12 +181,19 @@ components:
           type: string
         duration:
           type: string
-        segments.duration:
-          type: integer
-        segments.offset:
-          type: integer
+        # segments.duration:
+        #   type: integer
+        # segments.offset:
+        #   type: integer
         pagination:
           $ref: "#/components/schemas/Pagination"
+    VideoResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
     Pagination:
       type: object
       properties:
