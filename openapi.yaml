@@ -185,8 +185,8 @@ components:
         #   type: integer
         # segments.offset:
         #   type: integer
-        pagination:
-          $ref: "#/components/schemas/Pagination"
+        segments:
+          $ref: "#/components/schemas/Segments"
     VideoResponse:
       type: object
       properties:
@@ -194,11 +194,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Video"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
     Pagination:
       type: object
       properties:
         cursor:
           type: string
+    Segments:
+      type: object
+      properties:
+        duration:
+          type: integer
+        offset:
+          type: integer
 
 security:
   - oAuth2ClientCredentials: []

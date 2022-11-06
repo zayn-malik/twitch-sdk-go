@@ -40,6 +40,12 @@ type Pagination struct {
 	Cursor *string `json:"cursor,omitempty"`
 }
 
+// Segments defines model for Segments.
+type Segments struct {
+	Duration *int `json:"duration,omitempty"`
+	Offset   *int `json:"offset,omitempty"`
+}
+
 // User defines model for User.
 type User struct {
 	// BroadcasterType User’s broadcaster type partner, affiliate, or empty
@@ -91,12 +97,12 @@ type Video struct {
 	Duration    *string `json:"duration,omitempty"`
 
 	// Id ID of the video.
-	Id         *string     `json:"id,omitempty"`
-	Language   *string     `json:"language,omitempty"`
-	Pagination *Pagination `json:"pagination,omitempty"`
+	Id       *string `json:"id,omitempty"`
+	Language *string `json:"language,omitempty"`
 
 	// PublishedAt Date when the video was published.
-	PublishedAt *string `json:"published_at,omitempty"`
+	PublishedAt *string   `json:"published_at,omitempty"`
+	Segments    *Segments `json:"segments,omitempty"`
 
 	// StreamId ID of the stream.
 	StreamId     *string `json:"stream_id,omitempty"`
@@ -121,7 +127,8 @@ type Video struct {
 
 // VideoResponse defines model for VideoResponse.
 type VideoResponse struct {
-	Data *[]Video `json:"data,omitempty"`
+	Data       *[]Video    `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // GetUserParams defines parameters for GetUser.
