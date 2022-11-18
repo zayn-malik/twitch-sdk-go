@@ -5,8 +5,9 @@ https://github.com/deepmap/oapi-codegen
 # Example
 
 ```go
-    clientID = ""
-    clientSecret = ""
+func main() {
+   	var clientID = ""
+	var clientSecret = ""
 
     bearerTokenProvider, err := twitch.NewBearerToken(clientID, clientSecret)
 	if err != nil {
@@ -23,14 +24,14 @@ https://github.com/deepmap/oapi-codegen
 	}
 
     var login = "some login"
-	resp, err := cli.GetUserWithResponse(context.Background(), &twitch.GetUserParams{Login: &login})
+	resp, err := client.GetUserWithResponse(context.Background(), &twitch.GetUserParams{Login: &login})
 	if err != nil {
 		log.Fatal(err)
 	}
 
     for _, u := range *resp.JSON200.Data {
 		fmt.Printf("%s\n", *u.DisplayName)
-		r, err := cli.GetVideoWithResponse(context.Background(), &twitch.GetVideoParams{UserId: u.Id})
+		r, err := client.GetVideoWithResponse(context.Background(), &twitch.GetVideoParams{UserId: u.Id})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -39,4 +40,6 @@ https://github.com/deepmap/oapi-codegen
 			fmt.Println(*v.Title)
 		}
 	}
+
+}
 ```
