@@ -24,8 +24,6 @@ func NewBearerToken(clientID, clientSecret string) (*securityprovider.SecurityPr
 		return nil, err
 	}
 
-	fmt.Printf("Access token: %s\n", token.AccessToken)
-
 	bearerTokenProvider, err := securityprovider.NewSecurityProviderBearerToken(token.AccessToken)
 	if err != nil {
 		return nil, err
