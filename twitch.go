@@ -149,8 +149,14 @@ type GetVideoParams struct {
 	// UserId ID of user who owns the video.
 	UserId *string `form:"user_id,omitempty" json:"user_id,omitempty"`
 
-	// GameOd ID of the game the video is of.
-	GameOd   *string `form:"game_od,omitempty" json:"game_od,omitempty"`
+	// GameId ID of the game the video is of.
+	GameId *string `form:"game_id,omitempty" json:"game_id,omitempty"`
+
+	// After The cursor used to get the next page of results. The Pagination object in the response contains the cursor s value.
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+
+	// Before The cursor used to get the previous page of results. The Pagination object in the response contains the cursor s value.
+	Before   *string `form:"before,omitempty" json:"before,omitempty"`
 	ClientId *string `json:"Client-Id,omitempty"`
 }
 
@@ -385,9 +391,41 @@ func NewGetVideoRequest(server string, params *GetVideoParams) (*http.Request, e
 
 	}
 
-	if params.GameOd != nil {
+	if params.GameId != nil {
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "game_od", runtime.ParamLocationQuery, *params.GameOd); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "game_id", runtime.ParamLocationQuery, *params.GameId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.After != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "after", runtime.ParamLocationQuery, *params.After); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Before != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "before", runtime.ParamLocationQuery, *params.Before); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
